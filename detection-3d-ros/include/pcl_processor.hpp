@@ -62,6 +62,7 @@ typename pcl::PointCloud<PointT>::Ptr PCLProcessor<PointT>::rotate(typename pcl:
     return transformed;
 }
 
+
 // Downsample & Crop Box function
 template <typename PointT>
 typename pcl::PointCloud<PointT>::Ptr PCLProcessor<PointT>::downsampleRoI(Box3d roi, typename pcl::PointCloud<PointT>::Ptr& inputCloud, float voxelRes) {
@@ -90,6 +91,7 @@ typename pcl::PointCloud<PointT>::Ptr PCLProcessor<PointT>::downsampleRoI(Box3d 
 
     return cloudDownsample;
 }  
+
 
 // Clustering function
 template <typename PointT>
@@ -138,6 +140,7 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> PCLProcessor<PointT>::cluster
 }
 
 
+// Bounding box function
 template <typename PointT>
 Box3d PCLProcessor<PointT>::getBoundingBox(typename pcl::PointCloud<PointT>::Ptr& cluster) {
 
@@ -158,6 +161,7 @@ void PCLProcessor<PointT>::renderCloud(typename pcl::PointCloud<PointT>::Ptr& cl
     viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, name);
     viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, color.r, color.g, color.b, name);
 }
+
 
 // Render Box function
 template <typename PointT>
@@ -183,6 +187,7 @@ void PCLProcessor<PointT>::renderBox(Box3d box, int id, Color color, float opaci
     viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, opacity*0.3, cubeFill);
 }
 
+
 // Render Sphere function
 template <typename PointT>
 void PCLProcessor<PointT>::renderSphere(PointT center, float radius, int id, Color color, float opacity) {
@@ -206,6 +211,7 @@ void PCLProcessor<PointT>::clearViewer() {
     viewer->removeAllPointClouds();
     viewer->removeAllShapes();
 }
+
 
 // Spin once viewer
 template <typename PointT>
