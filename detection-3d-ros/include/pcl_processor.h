@@ -1,3 +1,7 @@
+#ifndef PCL_PROCESSOR_H
+#define PCL_PROCESSOR_H
+
+
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
 #include <pcl/visualization/pcl_visualizer.h>
@@ -14,6 +18,7 @@ public:
     float b;
 
 };
+
 
 class Box3d {
 public:
@@ -59,3 +64,5 @@ private:
 
 
 }
+
+#endif

@@ -1,3 +1,8 @@
+#ifndef PCL_PROCESSOR_HPP
+#define PCL_PROCESSOR_HPP
+
+
+
 #include <cmath>
 #include <vector>
 
@@ -158,7 +163,7 @@ template <typename PointT>
 void PCLProcessor<PointT>::renderCloud(typename pcl::PointCloud<PointT>::Ptr& cloud, std::string name, Color color) {
     
     viewer->addPointCloud<PointT>(cloud, name);
-    viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, name);
+    viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, name);
     viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, color.r, color.g, color.b, name);
 }
 
@@ -220,3 +225,6 @@ void PCLProcessor<PointT>::spinOnceViewer() {
 }
 
 }
+
+
+#endif

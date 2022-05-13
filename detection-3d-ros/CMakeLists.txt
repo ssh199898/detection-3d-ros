@@ -58,6 +58,7 @@ include_directories(
 add_executable(detection_3d_node 
     src/detection_3d_node.cpp
     src/detector_3d.cpp
+    src/cv_processor.cpp
 )
 
 add_dependencies(detection_3d_node

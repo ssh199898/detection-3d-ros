@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
+#include <cv_bridge/cv_bridge.h>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -15,6 +16,7 @@
 #include <opencv2/highgui.hpp>
 
 #include "pcl_processor.hpp"
+#include "cv_processor.h"
 
 #ifndef DETECTOR_3D
 #define DETECTOR_3D
@@ -38,11 +40,16 @@ public:
     void action_active_callback() {};
     void action_feedback_callback(const darknet_ros_msgs::CheckForObjectsFeedbackConstPtr& feedback) {};
 
-    // pcl_pipeline
-    std::vector<Box3d> pcl_pipeline();
 
 
 private:
+
+    // pcl_pipeline
+    std::vector<Box3d> pcl_pipeline();
+    
+    // Box projection on 2d
+    std::vector<Box2d> project_box_2d(std::vector<Box3d>& boxes_3d, int width, int height);
+
 
     // ROS
     ros::NodeHandle& nh;
@@ -50,8 +57,9 @@ private:
     ros::Subscriber pc_sub;
     actionlib::SimpleActionClient<darknet_ros_msgs::CheckForObjectsAction> darknet_client;
 
+
     sensor_msgs::PointCloud2::ConstPtr last_pc_msgs;
-    darknet_ros_msgs::BoundingBoxes last_2d_boxes_msgs;
+    std::vector<Box2d> last_detection_2d;
 
     // PCL
     PCLProcessor<pcl::PointXYZ> pcl_processor;
