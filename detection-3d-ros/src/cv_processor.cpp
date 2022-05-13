@@ -1,8 +1,10 @@
 #include <Eigen/Eigen>
+#include <boost/algorithm/clamp.hpp>
+
 
 #include "cv_processor.h"
 
-
+namespace detector_3d {
 
 // Project boxes onto plane
 std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int width, int height) {
@@ -79,17 +81,19 @@ std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int
     return boxes_2d;
 }
 
-void CVProcessor::draw_boxes_2d(std::vector<Box2d>& boxes_2d) {
-    
+void CVProcessor::draw_boxes_2d(cv::Mat& image, std::vector<Box2d>& boxes_2d, cv::Scalar color) {
+    for (auto box : boxes_2d) {
+        cv::rectangle(image, cv::Rect(cv::Point((int)box.x_min, (int)box.y_min), cv::Point((int)box.x_max, (int)box.y_max)), color, 1, 8, 0);    
+    }
 }
 
 // Intersection over Union. Assume all boxes are "corners" represented.
-float CVProcessor::get_iou(Box2d box1, Box2d box2) {
+float CVProcessor::get_iou(const Box2d& box1, const Box2d& box2) {
 
     int x1 = std::max(box1.x_min, box2.x_min);
     int y1 = std::max(box1.y_min, box2.y_min);
-    int x2 = std::max(box1.x_max, box2.x_max);
-    int y2 = std::max(box1.y_max, box2.y_max);
+    int x2 = std::min(box1.x_max, box2.x_max);
+    int y2 = std::min(box1.y_max, box2.y_max);
     
     int box1_area = std::abs((box1.x_max-box1.x_min) * (box1.y_max-box1.y_min));
     int box2_area = std::abs((box2.x_max-box2.x_min) * (box2.y_max-box2.y_min));
@@ -98,4 +102,10 @@ float CVProcessor::get_iou(Box2d box1, Box2d box2) {
     float iou = (float)intersection / (float)(box1_area + box2_area - intersection);
 
     return iou;
+}
+
+
+
+
+
 }

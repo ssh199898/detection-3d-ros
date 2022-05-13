@@ -1,7 +1,5 @@
 #include <pcl_ros/point_cloud.h>
 #include <boost/format.hpp>
-#include <boost/algorithm/clamp.hpp>
-
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -65,32 +63,39 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
         state_result = darknet_client.getState();
         pcl_processor.spinOnceViewer();
     };
-    if (state_result == actionlib::SimpleClientGoalState::SUCCEEDED)
-        ROS_INFO("Detection Successed");
-    else 
-        ROS_INFO("Detection Failed");
 
-    // 5. last_2d_boxes is now updated.
+
+    // 5. Convert boxes type
+    auto result = darknet_client.getResult();
+    std::vector<Box2d> last_detection_2d;
+    
+    for (auto box : result->bounding_boxes.bounding_boxes) {
+        if (box.id == 1) {
+            continue;
+        } else {
+            Box2d new_box(box.xmin, box.ymin, box.xmax, box.ymax);
+            last_detection_2d.push_back(new_box);
+        }
+    }
+
+    // 6. last_2d_boxes is now updated.
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(msgs, sensor_msgs::image_encodings::BGR8);
     int width = cv_ptr->image.size().width;
     int height = cv_ptr->image.size().height;
 
     //   a. Project box onto 2d image
-    auto pc_boxes_2d = project_box_2d(pc_boxes_3d, width, height);
+    auto pc_boxes_2d = CVProcessor::project_box_2d(pc_boxes_3d, width, height);
+
 
     //   b. draw boxes!
-    for (auto box : last_detection_2d) {
-        cv::rectangle(cv_ptr->image, cv::Rect(cv::Point((int)box.x_min, (int)box.y_min), cv::Point((int)box.x_max, (int)box.y_max)) , cv::Scalar(0, 255, 0), 1, 8, 0);    
-    }
-    for (auto box : pc_boxes_2d) {
-        cv::rectangle(cv_ptr->image, cv::Rect(cv::Point((int)box.x_min, (int)box.y_min), cv::Point((int)box.x_max, (int)box.y_max)) , cv::Scalar(0, 0, 255), 1, 8, 0);
-    }
+    CVProcessor::draw_boxes_2d(cv_ptr->image, last_detection_2d, cv::Scalar(0, 255, 0));
+    CVProcessor::draw_boxes_2d(cv_ptr->image, pc_boxes_2d, cv::Scalar(0, 0, 255));
 
 
     //   c. check IoU and select valid boxes only
-    std::vector<bool> valid_pc_box;
-    const double iou_threshold = 0.3;
+    std::vector<bool> valid_pc_box(pc_boxes_2d.size(), false);
+    float iou_threshold = 0.3;
 
     for (int i=0; i < pc_boxes_2d.size(); i++) {
         float best_iou = 0;
@@ -105,7 +110,7 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
         }
     }
 
-    // d. extract valid 3d boxes only;
+    //   d. extract valid 3d boxes only;
     std::vector<Box3d> valid_boxes_3d;
     std::vector<Box2d> valid_boxes_2d;
     for (int i=0; i < valid_pc_box.size(); i++) {
@@ -115,18 +120,11 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
         }
     }
 
-    // e. redraw valid boxes...
-    for (auto box : pc_boxes_2d) {
-        cv::rectangle(cv_ptr->image, cv::Rect(cv::Point((int)box.x_min, (int)box.y_min), cv::Point((int)box.x_max, (int)box.y_max)) , cv::Scalar(255, 0, 255), 1, 8, 0);
-    }
+    //   e. redraw valid boxes...
+    CVProcessor::draw_boxes_2d(cv_ptr->image, valid_boxes_2d, cv::Scalar(255, 0, 255));
 
     // TODO: publish 3d point topic
-
-
-
-
-
-
+    
 
 
     cv::imshow("det_3d debug", cv_ptr->image);
@@ -137,22 +135,6 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
 void Detector3d::pc_callback(const sensor_msgs::PointCloud2::ConstPtr& msgs) {
     last_pc_msgs = msgs; 
     pcl_processor.spinOnceViewer();
-}
-
-
-// Darknet Action Done Callback
-void Detector3d::action_done_callback(const actionlib::SimpleClientGoalState& state,
-                                      const darknet_ros_msgs::CheckForObjectsResultConstPtr& result) {
-    
-    std::vector<Box2d> new_bboxes;
-    
-    for (auto box : result->bounding_boxes.bounding_boxes) {
-        Box2d new_box(box.xmin, box.ymin, box.xmax, box.ymax);
-        new_bboxes.push_back(new_box);
-    }
-
-    // Save detection result
-    this->last_detection_2d = new_bboxes;
 }
 
 
@@ -169,7 +151,7 @@ std::vector<Box3d> Detector3d::pcl_pipeline() {
     pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud = pcl_processor.downsampleRoI(roi, rawCloud, 0.01); // downsample unit in meter
 
     //   2. Segmentation & Clustering
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pcl_processor.cluster(inputCloud, 0.05, 20, 500);
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pcl_processor.cluster(inputCloud, 0.02, 20, 100);
 
 
     //   4. Visualization & Get B-Box

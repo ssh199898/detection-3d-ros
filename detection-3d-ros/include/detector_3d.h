@@ -36,7 +36,7 @@ public:
 
     // Darknet action callbacks
     void action_done_callback(const actionlib::SimpleClientGoalState& state,
-                              const darknet_ros_msgs::CheckForObjectsResultConstPtr& result);
+                              const darknet_ros_msgs::CheckForObjectsResultConstPtr& result) {};
     void action_active_callback() {};
     void action_feedback_callback(const darknet_ros_msgs::CheckForObjectsFeedbackConstPtr& feedback) {};
 
