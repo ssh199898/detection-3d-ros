@@ -4,6 +4,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+
 #include "detector_3d.h"
 
 namespace detector_3d {
@@ -19,8 +20,7 @@ Detector3d::Detector3d(ros::NodeHandle& nh):
     // ROS
     img_sub = nh.subscribe("/camera/color/image_raw", 1, &Detector3d::img_callback, this);
     pc_sub = nh.subscribe("/camera/depth/color/points", 1, &Detector3d::pc_callback, this);
-
-
+    box_pub = nh.advertise<vision_msgs::Detection3DArray>("/detection_3d/detection_3d", 1);
 
     ROS_INFO("Detector Instance is Up");
 }
@@ -122,13 +122,36 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
 
     //   e. redraw valid boxes...
     CVProcessor::draw_boxes_2d(cv_ptr->image, valid_boxes_2d, cv::Scalar(255, 0, 255));
-
-    // TODO: publish 3d point topic
-    
-
-
     cv::imshow("det_3d debug", cv_ptr->image);
     cv::waitKey(3);
+
+
+    // 7. publish 3d point topic
+    vision_msgs::Detection3DArray detection_3d_msgs;
+    for (auto box : valid_boxes_3d) {
+        vision_msgs::Detection3D box_msg;
+        
+        float center_x = (box.x_min+box.x_max)/2.0;
+        float center_y = (box.y_min+box.y_max)/2.0;
+        float center_z = (box.z_min+box.z_max)/2.0;
+
+        float size_x = (box.x_max-box.x_min);
+        float size_y = (box.y_max-box.y_min);
+        float size_z = (box.z_max-box.z_min);
+
+        box_msg.bbox.center.position.x = center_x;
+        box_msg.bbox.center.position.y = center_y;
+        box_msg.bbox.center.position.z = center_z;
+        
+        box_msg.bbox.size.x = size_x;
+        box_msg.bbox.size.y = size_y;
+        box_msg.bbox.size.z = size_z;
+
+        detection_3d_msgs.detections.push_back(box_msg);
+    }
+
+    box_pub.publish(detection_3d_msgs);
+
 }
 
 // Pointcloud Callback

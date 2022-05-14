@@ -17,6 +17,7 @@
   <depend>actionlib_msgs</depend>
   <depend>actionlib</depend>
   <depend>darknet_ros_msgs</depend>
+  <depend>vision_msgs</depend>
 
   <build_depend>message_generation</build_depend>
 

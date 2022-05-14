@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     actionlib
     darknet_ros_msgs
     message_generation
+    vision_msgs
 )
 
 # Required packages (CMake)
@@ -38,7 +39,7 @@ find_package(
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS roscpp std_msgs sensor_msgs cv_bridge pcl_ros geometry_msgs actionlib actionlib_msgs darknet_ros_msgs
+    CATKIN_DEPENDS roscpp std_msgs sensor_msgs cv_bridge pcl_ros geometry_msgs actionlib actionlib_msgs darknet_ros_msgs vision_msgs
     DEPENDS PCL OpenCV
 )
 

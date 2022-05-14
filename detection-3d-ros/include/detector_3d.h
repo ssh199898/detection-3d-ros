@@ -7,6 +7,9 @@
 #include <darknet_ros_msgs/CheckForObjectsAction.h>
 #include <darknet_ros_msgs/BoundingBox.h>
 #include <darknet_ros_msgs/BoundingBoxes.h>
+#include <vision_msgs/Detection3D.h>
+#include <vision_msgs/Detection3DArray.h>
+
 
 
 #include <pcl/io/pcd_io.h>
@@ -55,6 +58,7 @@ private:
     ros::NodeHandle& nh;
     ros::Subscriber img_sub;
     ros::Subscriber pc_sub;
+    ros::Publisher box_pub;
     actionlib::SimpleActionClient<darknet_ros_msgs::CheckForObjectsAction> darknet_client;
 
 
