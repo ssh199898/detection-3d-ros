@@ -14,7 +14,8 @@ namespace detector_3d {
 Detector3d::Detector3d(ros::NodeHandle& nh):
     nh(nh), 
     pcl_processor(),
-    darknet_client("/darknet_ros/check_for_objects", true)
+    darknet_client("/darknet_ros/check_for_objects", true),
+    last_pc_msgs(new sensor_msgs::PointCloud2())
     {
 
     // ROS
