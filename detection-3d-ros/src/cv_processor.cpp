@@ -14,8 +14,8 @@ std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int
     // HD: H: 87+-3, V: 58+-1
 
     const float focal = 1.0; // 1 meter (or can be thought as relative to 1)
-    const float scene_hor = sin(37.0 * M_PI / 180.0);
-    const float scene_ver = sin(30.0 * M_PI / 180.0);
+    const float scene_hor = sin(36.0 * M_PI / 180.0);
+    const float scene_ver = sin(28.0 * M_PI / 180.0);
     
     const float center_x = 0.5; // position of center in scene is (0.5, 0.5) while 3d is (0, 0, 0)
     const float center_y = 0.5;
@@ -39,13 +39,13 @@ std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int
     
         // Translation from depth to color sensor (-1 cm in x)
         Eigen::Matrix4f translation;
-        translation << 1, 0, 0, -0.015,
+        translation << 1, 0, 0, -0.017,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
                     0, 0, 0, 1;
 
         // Projection matrix (using box_3d.z_min for z-distance to box)
-        float z_dist = (box_3d.z_min - 0.001); // 6cm compensation
+        float z_dist = (box_3d.z_min - 0.001); // 1cm compensation
         Eigen::MatrixXf projection(3, 4);
         projection << focal / z_dist, 0, 0, 0,
                     0, focal / z_dist, 0, 0,
