@@ -67,14 +67,15 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
 
     // 5. Convert boxes type
     auto result = darknet_client.getResult();
-    std::vector<Box2d> last_detection_2d;
+    std::vector<Box2d> interest_detection_2d;
+    std::vector<Box2d> uninterest_detection_2d;
     
     for (auto box : result->bounding_boxes.bounding_boxes) {
+         Box2d new_box(box.xmin, box.ymin, box.xmax, box.ymax);
         if (box.id == 1) {
-            continue;
+            uninterest_detection_2d.push_back(new_box);
         } else {
-            Box2d new_box(box.xmin, box.ymin, box.xmax, box.ymax);
-            last_detection_2d.push_back(new_box);
+            interest_detection_2d.push_back(new_box);
         }
     }
 
@@ -89,8 +90,9 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
 
 
     //   b. draw boxes!
-    CVProcessor::draw_boxes_2d(cv_ptr->image, last_detection_2d, cv::Scalar(0, 255, 0));
-    CVProcessor::draw_boxes_2d(cv_ptr->image, pc_boxes_2d, cv::Scalar(0, 0, 255));
+    CVProcessor::draw_boxes_2d(cv_ptr->image, interest_detection_2d, cv::Scalar(255, 0, 255), 2); // red apple
+    CVProcessor::draw_boxes_2d(cv_ptr->image, uninterest_detection_2d, cv::Scalar(0, 255, 0), 2); // green apple
+    CVProcessor::draw_boxes_2d(cv_ptr->image, pc_boxes_2d, cv::Scalar(0, 0, 255), 3); // points
 
 
     //   c. check IoU and select valid boxes only
@@ -100,9 +102,9 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
     for (int i=0; i < pc_boxes_2d.size(); i++) {
         float best_iou = 0;
 
-        for (int j=0; j < last_detection_2d.size(); j++) {
+        for (int j=0; j < interest_detection_2d.size(); j++) {
             // check IoU and get box with highest IoU and threshold
-            float iou = CVProcessor::get_iou(pc_boxes_2d[i], last_detection_2d[j]);
+            float iou = CVProcessor::get_iou(pc_boxes_2d[i], interest_detection_2d[j]);
             if (iou > best_iou && iou > iou_threshold) {
                 valid_pc_box[i] = true;
                 best_iou = iou;
@@ -121,7 +123,7 @@ void Detector3d::img_callback(const sensor_msgs::Image::ConstPtr& msgs) {
     }
 
     //   e. redraw valid boxes...
-    CVProcessor::draw_boxes_2d(cv_ptr->image, valid_boxes_2d, cv::Scalar(255, 0, 255));
+    CVProcessor::draw_boxes_2d(cv_ptr->image, valid_boxes_2d, cv::Scalar(255, 255, 0), 3);
     cv::imshow("det_3d debug", cv_ptr->image);
     cv::waitKey(3);
 
@@ -171,10 +173,10 @@ std::vector<Box3d> Detector3d::pcl_pipeline() {
     //   1. Preprocessing (axis conversion, RoI, downsampling)
     Box3d roi = Box3d(0, -0.2, -0.2, 0.4, 0.2, 0.2);
     rawCloud = pcl_processor.rotate(rawCloud);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud = pcl_processor.downsampleRoI(roi, rawCloud, 0.01); // downsample unit in meter
+    pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud = pcl_processor.downsampleRoI(roi, rawCloud, 0.005); // downsample unit in meter
 
     //   2. Segmentation & Clustering
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pcl_processor.cluster(inputCloud, 0.02, 20, 100);
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pcl_processor.cluster(inputCloud, 0.0065, 20, 100);
 
 
     //   4. Visualization & Get B-Box

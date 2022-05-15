@@ -15,7 +15,7 @@ std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int
 
     const float focal = 1.0; // 1 meter (or can be thought as relative to 1)
     const float scene_hor = sin(39.0 * M_PI / 180.0);
-    const float scene_ver = sin(30.0 * M_PI / 180.0);
+    const float scene_ver = sin(31.0 * M_PI / 180.0);
     
     const float center_x = 0.5; // position of center in scene is (0.5, 0.5) while 3d is (0, 0, 0)
     const float center_y = 0.5;
@@ -39,13 +39,13 @@ std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int
     
         // Translation from depth to color sensor (-1 cm in x)
         Eigen::Matrix4f translation;
-        translation << 1, 0, 0, -0.018,
+        translation << 1, 0, 0, -0.015,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
                     0, 0, 0, 1;
 
         // Projection matrix (using box_3d.z_min for z-distance to box)
-        float z_dist = (box_3d.z_min - 0.05); // 6cm compensation
+        float z_dist = (box_3d.z_min - 0.0015); // 6cm compensation
         Eigen::MatrixXf projection(3, 4);
         projection << focal / z_dist, 0, 0, 0,
                     0, focal / z_dist, 0, 0,
@@ -81,9 +81,9 @@ std::vector<Box2d> CVProcessor::project_box_2d(std::vector<Box3d>& boxes_3d, int
     return boxes_2d;
 }
 
-void CVProcessor::draw_boxes_2d(cv::Mat& image, std::vector<Box2d>& boxes_2d, cv::Scalar color) {
+void CVProcessor::draw_boxes_2d(cv::Mat& image, std::vector<Box2d>& boxes_2d, cv::Scalar color, int thickness) {
     for (auto box : boxes_2d) {
-        cv::rectangle(image, cv::Rect(cv::Point((int)box.x_min, (int)box.y_min), cv::Point((int)box.x_max, (int)box.y_max)), color, 1, 8, 0);    
+        cv::rectangle(image, cv::Rect(cv::Point((int)box.x_min, (int)box.y_min), cv::Point((int)box.x_max, (int)box.y_max)), color, thickness, 8, 0);    
     }
 }
 

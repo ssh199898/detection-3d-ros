@@ -28,7 +28,7 @@ public:
 class CVProcessor {
 public:
     static std::vector<Box2d> project_box_2d(std::vector<Box3d>& boxes_3d, int width, int height);
-    static void draw_boxes_2d(cv::Mat& image, std::vector<Box2d>& boxes_2d, cv::Scalar color);
+    static void draw_boxes_2d(cv::Mat& image, std::vector<Box2d>& boxes_2d, cv::Scalar color, int thickness);
     static float get_iou(const Box2d& box1, const Box2d& box2);
 
 
