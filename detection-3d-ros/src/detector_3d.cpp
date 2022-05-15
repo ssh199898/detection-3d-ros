@@ -195,9 +195,9 @@ std::vector<Box3d> Detector3d::pcl_pipeline() {
 
     //      b. render input
     if (render_raw)
-        pcl_processor.renderCloud(rawCloud, "raw cloud", Color(0.5, 0.5, 0.5));
+        pcl_processor.renderCloud(rawCloud, "raw cloud", Color(0.4, 0.4, 0.4));
     if (render_input)
-        pcl_processor.renderCloud(inputCloud, "input cloud", Color(1, 0, 0));
+        pcl_processor.renderCloud(inputCloud, "input cloud", Color(0.7, 0.7, 0.7));
     
     //      c. render cloud & bbox per cluster
     for (int i=0; i<cloudClusters.size(); i++) {
@@ -213,7 +213,7 @@ std::vector<Box3d> Detector3d::pcl_pipeline() {
             pcl_processor.renderCloud(cluster, "clusterCloud"+std::to_string(i), colors[i]);
 
         if (render_bbox)
-            pcl_processor.renderBox(box, i, colors[i], 0.1);
+            pcl_processor.renderBox(box, i, colors[i], 0.7);
     }
 
     //      d. RoI & dead zone area
