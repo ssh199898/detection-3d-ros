@@ -210,10 +210,10 @@ std::vector<Box3d> Detector3d::pcl_pipeline() {
         boxes.push_back(box);     
 
         if (render_cluster)
-            pcl_processor.renderCloud(cluster, "clusterCloud"+std::to_string(i), colors[i]);
+            pcl_processor.renderCloud(cluster, "clusterCloud"+std::to_string(i), Color(1, 0, 0));
 
         if (render_bbox)
-            pcl_processor.renderBox(box, i, colors[i], 0.7);
+            pcl_processor.renderBox(box, i, Color(1, 0, 0), 0.6);
     }
 
     //      d. RoI & dead zone area
